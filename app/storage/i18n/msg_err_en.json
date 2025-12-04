@@ -1,0 +1,4 @@
+{
+  "auth.invalid_key": "Unauthorized: Invalid or missing API key",
+  "auth.invalid_cipher": "Cannot find appropriate Cipher Type!"
+}
