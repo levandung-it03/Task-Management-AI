@@ -1,0 +1,10 @@
+pandas~=2.3.3
+joblib~=1.5.2
+numpy~=2.3.5
+lightgbm~=4.6.0
+scikit-learn~=1.7.2
+pydantic~=2.12.5
+cryptography~=46.0.3
+fastapi~=0.123.10
+python-dotenv~=1.2.1
+starlette~=0.50.0
