@@ -4,7 +4,6 @@ from cryptography.hazmat.primitives import padding
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.backends import default_backend
 
-from app.util.constants.I18n import ErrMsg
 from app.util.constants.Variables import Crypto
 
 
