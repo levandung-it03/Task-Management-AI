@@ -9,9 +9,6 @@ from app.router import TaskUserPredRouter, ReportGenRouter
 from app.service.task_user_svc import TaskUserPredSvc
 from app.util.constants.Variables import Env
 
-from app.dto.report_gen import ReportRequest, ReportResponse
-
-
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     TaskUserPredSvc.start_server()
@@ -29,8 +26,8 @@ app.add_middleware(
 exceptionHandler = ExcHandler(app)
 exceptionHandler.turn_on()
 
-# authInterceptor = AuthInterceptor(app)
-# authInterceptor.turn_on()
+authInterceptor = AuthInterceptor(app)
+authInterceptor.turn_on()
 
 # Include routers
 app.include_router(TaskUserPredRouter.router)

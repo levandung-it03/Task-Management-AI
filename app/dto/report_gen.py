@@ -33,4 +33,3 @@ and ending with the name "{self.employee_name}".
 
 class ReportResponse(BaseModel):
     report: str
-    success: bool

@@ -1,5 +1,5 @@
 
-class CstModelConfig:
+class CstModelCfg:
     APP_NAME = "Report Generation API"
     VERSION = "1.0.0"
     MODEL_NAME = "llama-3-8b-report-gen"
@@ -9,22 +9,16 @@ class CstModelConfig:
     SYS_ROLE = "system"
     USR_ROLE = "user"
 
-    @classmethod
-    def generate_request_json(cls, prompt: str):
-        return {
-        "model": cls.MODEL_NAME,
-        "messages": [
-            {"role": cls.SYS_ROLE, "content": cls.DEF_PROMPT_TOKEN},
-            {"role": cls.USR_ROLE, "content": prompt}
-        ],
-        "temperature": cls.DEF_TEMPERATURE,
-        "max_tokens": cls.DEF_MAX_TOKENS
-    }
-
+class CstModelReq:
+    content = "content"
+    role = "role"
+    model = "model"
+    messages = "messages"
+    temperature = "temperature"
+    max_tokens = "max_tokens"
+    
 class CstModelRes:
-    Choices = "choices"
-    Message = "message"
-    Content = "content"
+    report = "report"
 
 class CstLog:
     res_success = "Report generated successfully by model: "
