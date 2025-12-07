@@ -5,9 +5,11 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.interceptor.exception import ExcHandler
 from app.interceptor.interceptor import AuthInterceptor
-from app.router import TaskUserPredRouter
+from app.router import TaskUserPredRouter, ReportGenRouter
 from app.service.task_user_svc import TaskUserPredSvc
 from app.util.constants.Variables import Env
+
+from app.dto.report_gen import ReportRequest, ReportResponse
 
 
 @asynccontextmanager
@@ -32,3 +34,4 @@ authInterceptor.turn_on()
 
 # Include routers
 app.include_router(TaskUserPredRouter.router)
+app.include_router(ReportGenRouter.router)
