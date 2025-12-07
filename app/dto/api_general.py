@@ -1,4 +1,5 @@
+from pydantic import BaseModel
 
-class ErrorResponse:
-    def __init__(self, error: str):
-        self.error = error
+
+class ErrorResponse(BaseModel):
+    error: str
