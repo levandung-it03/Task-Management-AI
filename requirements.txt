@@ -8,3 +8,4 @@ cryptography~=46.0.3
 fastapi~=0.123.10
 python-dotenv~=1.2.1
 starlette~=0.50.0
+requests~=2.32.5

@@ -1,50 +1,34 @@
+import os
+
 import requests
-from app.machine.report_generator.config import settings
+from dotenv import load_dotenv
+
+from app.dto.report_gen import ReportRequest
 from app.machine.report_generator.logger import logger
+from app.util.constants.ReportGen import CstModelConfig, CstModelRes, CstLog
+from app.util.constants.Variables import Env
 
+load_dotenv()
 
-def generate_report(task: str, desc: str, project: str, project_desc: str, 
-                    phase: str, phase_desc: str, collection: str, 
-                    collection_desc: str, reject_count: int, 
-                    reason: str, employee_name: str) -> str:
+class ReportGenSvc:
+    REPORT_GEN_HOST = str(os.getenv(Env.NGROK_REPORT_GENT_HOST))
 
-    prompt = f"""
-You are a software engineer reporting progress to your manager.
-Project: {project}
-Project description: {project_desc} 
-Phase: {phase}
-Phase description: {phase_desc}
-Collection: {collection}
-Collection description: {collection_desc}
-Task: {task}
-Description: {desc}
-Report rejected times: {reject_count}
-Reject reason: {reason}
+    @classmethod
+    def generate_report(cls, request: ReportRequest) -> str:
+        prompt = request.to_prompt()
+        payload = CstModelConfig.generate_request_json(prompt)
 
-Write a short formal report (3-5 sentences) starting with a greeting such as "Dear Manager" or "Dear Lead",
-and ending with the name "{employee_name}".
-"""
+        try:
+            response = requests.post(cls.REPORT_GEN_HOST, json=payload, timeout=20)
+            response.raise_for_status()
 
-    payload = {
-        "model": settings.model_name,
-        "messages": [
-            {"role": "system", "content": "You are a helpful assistant generating concise work reports."},
-            {"role": "user", "content": prompt}
-        ],
-        "temperature": settings.temperature,
-        "max_tokens": settings.max_tokens
-    }
+            data = response.json()
+            text = data[CstModelRes.Choices][0][CstModelRes.Message][CstModelRes.Content]
 
-    try:
-        response = requests.post(settings.model_api_url, json=payload, timeout=20)
-        response.raise_for_status()
+            logger.info(CstLog.res_success + CstModelConfig.MODEL_NAME)
+            return text.strip()
 
-        data = response.json()
-        text = data["choices"][0]["message"]["content"]
+        except Exception as e:
+            logger.error(CstLog.res_error + e)
+            raise RuntimeError(CstLog.res_def_throw)
 
-        logger.info(f"Report generated successfully by model: {settings.model_name}")
-        return text.strip()
-
-    except Exception as e:
-        logger.error(f"Model server error: {e}")
-        raise RuntimeError("Failed to generate report from model API")
