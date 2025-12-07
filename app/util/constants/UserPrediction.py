@@ -12,7 +12,6 @@ class CstWeights:
     IS_ON_TIME = 1
     FREE_TIME = 1
     PUNCT_SCORE = 0.5
-# PPw: weight khac' weight binh thuong
 
 class CstFiles:
     # _ROOT_STORAGE_FOLDER = os.getcwd() + '/app/storage'

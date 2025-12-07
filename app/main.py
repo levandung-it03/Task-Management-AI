@@ -29,8 +29,8 @@ app.add_middleware(
 exceptionHandler = ExcHandler(app)
 exceptionHandler.turn_on()
 
-authInterceptor = AuthInterceptor(app)
-authInterceptor.turn_on()
+# authInterceptor = AuthInterceptor(app)
+# authInterceptor.turn_on()
 
 # Include routers
 app.include_router(TaskUserPredRouter.router)
