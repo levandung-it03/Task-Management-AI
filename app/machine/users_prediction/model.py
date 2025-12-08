@@ -156,16 +156,14 @@ class RecModelSvc:
     def _init_model(cls, n_estimators=100):
         return lgb.LGBMClassifier(
             objective="multiclass",
-            random_state=42,
-            n_estimators=n_estimators,
+            random_state=42,    # Model separate dataset with a fixed-size (popular in community).
+            n_estimators=n_estimators,  # Num of trees.
             learning_rate=0.05,
             num_leaves=15,
-            max_depth=8,
-            reg_alpha=0.1,
-            reg_lambda=0.1,
-            min_data_in_leaf=20,
-            metric="multi_logloss",
-            verbosity=-1,
+            max_depth=5,
+            min_data_in_leaf=5,     # From DecisionTree.
+            metric="multi_logloss", # Support output score.
+            verbosity=-1,           # Tur-off default log.
         )
 
     @classmethod
@@ -307,7 +305,7 @@ class RecModelSvc:
                 print(f"\n====================== BATCH{lidx}-{pidx} ======================")
                 request = RecommendingUsersRequest(
                     domain=default_domain,
-                    level=level_str,
+                    level="NORMAL",
                     priority=priority_str
                 )
                 DebuggerSvc.log_request(request)
@@ -316,4 +314,4 @@ class RecModelSvc:
                 DebuggerSvc.log_prediction(recommendations, user_map, request, CacheSvc.get_cache())
                 DebuggerSvc.stop_terminal_log()
 
-# RecModelSvc.run_test_loss()
+RecModelSvc.run_test_loss()
