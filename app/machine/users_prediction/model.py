@@ -314,4 +314,4 @@ class RecModelSvc:
                 DebuggerSvc.log_prediction(recommendations, user_map, request, CacheSvc.get_cache())
                 DebuggerSvc.stop_terminal_log()
 
-RecModelSvc.run_test_loss()
+# RecModelSvc.run_test_loss()
