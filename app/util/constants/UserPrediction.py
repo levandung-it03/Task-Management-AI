@@ -1,10 +1,10 @@
+import os
 import pandas as pd
 
 from app.dto.task_user import TaskUserRecord, RecommendingUsersRequest, EncTskUsrPredRequest
 
 class CstSymbols:
     UNDERLINE = "_"
-
 
 class CstWeights:
     LEVEL = 5
@@ -14,8 +14,8 @@ class CstWeights:
     PUNCT_SCORE = 0.5
 
 class CstFiles:
-    # _ROOT_STORAGE_FOLDER = os.getcwd() + '/app/storage'
-    _ROOT_STORAGE_FOLDER = 'D:\\Develop\\My_Own_Projects\\intern_project\\fastapi\\app/storage'
+    _ROOT_STORAGE_FOLDER = os.getcwd() + '/app/storage'
+    # _ROOT_STORAGE_FOLDER = 'D:\\Develop\\My_Own_Projects\\intern_project\\fastapi\\app/storage'
     _MODEL_FOLDER = '/model'
     _MODEL_DATA = '/data'
     _LOG = '/log'
