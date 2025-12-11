@@ -62,6 +62,7 @@ class CstUser:
 
 
 class CstModel:
+    DEF_SCORE = 98,88
     MIN_LINES_USERS_RTO = 30
     DS_TEST_SIZE = 0.2
     DS_SPLIT_RAND_STATE = 42

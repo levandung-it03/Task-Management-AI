@@ -249,7 +249,7 @@ class RecModelSvc:
         max_score = max(ranked_scores)
         min_score = min(ranked_scores)
         range_of_score = max_score - min_score
-        precisions = [(score - min_score) / range_of_score * 100 for score in ranked_scores]
+        precisions = [(score - min_score) / range_of_score * CstModel.DEF_SCORE for score in ranked_scores]
         return precisions
 
     @classmethod
