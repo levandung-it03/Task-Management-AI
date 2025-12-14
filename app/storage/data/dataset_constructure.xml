@@ -1,0 +1,39 @@
+[
+    {
+        "project_id": str,
+        "project_name": str,
+        "project_description": str,
+        "phases": str[
+            {
+                "phase_id": str,
+                "phase_name": str,
+                "phase_description": str,
+                "collections": str[
+                    {
+                        "collection_id": str,
+                        "collection_name": str
+                        "collection_description": str
+                        "tasks": str[
+                            {
+                                "task_id": str,
+                                "task_name": str
+                                "task_description": str
+                                "daily_report": str
+                                "subtasks": str[
+                                {
+                                    "subtask_id": str,
+                                    "subtask_name": str
+                                    "subtask_description": str
+                                    "status": str
+                                    "processing_report": str
+                                    "completed_report": str
+                                },
+                                ]
+                            },
+                        ]
+                    },
+                ]
+            },
+        ]
+    },
+]

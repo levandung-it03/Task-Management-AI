@@ -1,35 +1,62 @@
 from pydantic import BaseModel
+from typing import List
+
+class Subtask(BaseModel):
+    name: str = ""
+    description: str = ""
+    status: str = ""
 
 class ReportRequest(BaseModel):
-    task: str
-    desc: str
-    project: str
-    project_desc: str
-    phase: str
-    phase_desc: str
-    collection: str
-    collection_desc: str
-    reject_count: int
-    reason: str
-    employee_name: str
+    project: str = ""
+    project_desc: str = ""
+    phase: str = ""
+    phase_desc: str = ""
+    collection: str = ""
+    collection_desc: str = ""
+    creator_name: str = ""
+    employee_name: str = ""
+    task_name: str = ""
+    task_desc: str = ""
+    subtasks_name: str = ""
+    subtasks_desc: str = ""
+    subtasks: List[Subtask] = []
 
-    def to_prompt(self):
+
+    def to_completed_report_prompt(self):
         return f"""
-You are a software engineer reporting progress to your manager.
-Project: {self.project}
-Project description: {self.project_desc} 
-Phase: {self.phase}
-Phase description: {self.phase_desc}
-Collection: {self.collection}
-Collection description: {self.collection_desc}
-Task: {self.task}
-Description: {self.desc}
-Report rejected times: {self.reject_count}
-Reject reason: {self.reason}
+Start with Dear Mr. of Ms. {self.creator_name}, end with {self.employee_name}\n
+Generate COMPLETED_EMAIL based on the following subtask context:\n\n
+Project: {self.project} ({self.project_desc})\n
+Phase: {self.phase} ({self.phase_desc})\n
+Collection: {self.collection} ({self.collection_desc})\n
+Task: {self.task_name} ({self.task_desc})\n
+f"Subtask: {self.subtasks_name} ({self.subtasks_desc})"
+"""
+        
+    def to_processing_report_prompt(self):
+        return f"""
+Start with Dear Mr of Ms {self.creator_name}, end with {self.employee_name}\n
+Generate IN_PROGRESS_EMAIL based on the following subtask context:\n\n
+Project: {self.project} ({self.project_desc})\n
+Phase: {self.phase} ({self.phase_desc})\n
+Collection: {self.collection} ({self.collection_desc})\n
+Task: {self.task_name} ({self.task_desc})\n
+f"Subtask: {self.subtasks_name} ({self.subtasks_desc})"
+"""
 
-Write a short formal report (3-5 sentences) starting with a greeting such as "Dear Manager" or "Dear Lead",
-and ending with the name "{self.employee_name}".
+    def to_daily_report_prompt(self):
+        subtasks_info = "\n".join([
+                    f"- {s.get('name', 'N/A')} - Status: {s.get('status', 'N/A')}" for s in self.subtasks
+                ])
+        return f"""
+Generate DAILY_PROGRESS_NOTE based on the following project context:\n\n
+Start with Dear Mr of Ms {self.creator_name}, end with {self.employee_name}
+Project: {self.project} ({self.project_desc})\n
+Phase: {self.phase} ({self.phase_desc})\n
+Collection: {self.collection} ({self.collection_desc})\n
+Task: {self.task_name} ({self.task_desc})\n
+Subtasks Status:\n{subtasks_info}"
 """
 
 class ReportResponse(BaseModel):
-    report: str
+    report: str = "Can not get report from Report-Gen server"
