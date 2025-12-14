@@ -84,6 +84,12 @@ class CacheSvc:
             return cache[key]
 
     @classmethod
+    def upsert_min_value(cls, key: str, value):
+        cache = cls.get_cache()
+        cache[key] = min(cache[key], value)
+        cls._save_cache(cache)
+
+    @classmethod
     def upsert_max_value(cls, key: str, value):
         cache = cls.get_cache()
         cache[key] = max(cache[key], value)
@@ -102,7 +108,7 @@ class CacheSvc:
 
         cache[CstCache.max_free_time] = max(df[CstTask.free_time_rto])
         cache[CstCache.is_on_time] = CstCache.def_is_on_time
-        cache[CstCache.punct_score] = CstCache.def_punct_score
+        cache[CstCache.min_used_time] = CstCache.def_min_used_time
 
         cls._save_cache(cache)
 
@@ -121,7 +127,7 @@ class RecModelSvc:
         df[CstTask.priority] *= CstWeights.PRIORITY
         df[CstTask.is_on_time] *= CstWeights.IS_ON_TIME
         df[CstTask.free_time_rto] *= CstWeights.FREE_TIME
-        df[CstTask.punct_score] *= CstWeights.PUNCT_SCORE
+        df[CstTask.used_time_rto] *= CstWeights.USED_TIME
         return df
 
     @classmethod
@@ -130,7 +136,7 @@ class RecModelSvc:
         row[CstTask.priority] *= CstWeights.PRIORITY
         row[CstTask.is_on_time] *= CstWeights.IS_ON_TIME
         row[CstTask.free_time_rto] *= CstWeights.FREE_TIME
-        row[CstTask.punct_score] *= CstWeights.PUNCT_SCORE
+        row[CstTask.used_time_rto] *= CstWeights.USED_TIME
         return row
 
     @classmethod
@@ -211,7 +217,9 @@ class RecModelSvc:
         df = cls.pre_handle_dataset(df)
 
         max_free_time = max([line.free_time_rto for line in new_records])
+        min_used_time = min([line.used_time_rto for line in new_records])
         CacheSvc.upsert_max_value(CstCache.max_free_time, max_free_time)   # save max_free_time
+        CacheSvc.upsert_min_value(CstCache.min_used_time, min_used_time)   # save min_used_time
 
         label_encoder = cls._load_encoder()
         label_encoder.fit(df[CstTask.label_name])
@@ -264,7 +272,7 @@ class RecModelSvc:
             CstTask.priority: enc_request.priority,
             CstTask.is_on_time: cached_values[CstCache.is_on_time],
             CstTask.free_time_rto: cached_values[CstCache.max_free_time],
-            CstTask.punct_score: cached_values[CstCache.punct_score]
+            CstTask.used_time_rto: cached_values[CstCache.min_used_time]
         }])
         # -------------prediction---------------
         predicted_res = model.booster_.predict(input_df, raw_score=True)

@@ -18,7 +18,7 @@ class TaskUserRecord(BaseModel):
     level: str
     is_on_time: bool
     free_time_rto: float
-    punct_score: float
+    used_time_rto: float
 
 
 class UpdatingTskUsrModelRequest(BaseModel):

@@ -7,11 +7,11 @@ class CstSymbols:
     UNDERLINE = "_"
 
 class CstWeights:
-    LEVEL = 5
-    PRIORITY = 2.5
-    IS_ON_TIME = 1
-    FREE_TIME = 1
-    PUNCT_SCORE = 0.5
+    LEVEL = 6
+    PRIORITY = 2
+    IS_ON_TIME = 1.5
+    FREE_TIME = 0.7
+    USED_TIME = 0.3
 
 class CstFiles:
     _ROOT_STORAGE_FOLDER = os.getcwd() + '/app/storage'
@@ -38,10 +38,10 @@ class CstErrors:
 class CstCache:
     is_on_time = 'is_on_time'
     max_free_time = 'max_free_time'
-    punct_score = 'punct_score'
+    min_used_time = 'min_used_time'
     def_is_on_time = 1
     def_max_free_time = 1.0
-    def_punct_score = 1.0
+    def_min_used_time = 0.0
 
 
 class CstTask:
@@ -51,8 +51,7 @@ class CstTask:
     domain = "domain"
     is_on_time = "is_on_time"
     free_time_rto = "free_time_rto"
-    late_time_perct = "late_time_perct"
-    punct_score = "punct_score"
+    used_time_rto = "used_time_rto"
 
 
 class CstUser:
@@ -73,7 +72,7 @@ class CstModel:
         CstTask.priority,
         CstTask.is_on_time,
         CstTask.free_time_rto,
-        CstTask.punct_score
+        CstTask.used_time_rto
     ]
     type_category = "category"
 
@@ -120,4 +119,4 @@ class CstTaskConvertor:
                    CstTask.level,
                    CstTask.is_on_time,
                    CstTask.free_time_rto,
-                   CstTask.punct_score]]
+                   CstTask.used_time_rto]]
