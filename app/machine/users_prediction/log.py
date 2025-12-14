@@ -67,7 +67,7 @@ class DebuggerSvc:
                 CstTask.level: 0,
                 CstTask.priority: 0,
                 CstTask.free_time_rto: 0,
-                CstTask.punct_score: 0,
+                CstTask.used_time_rto: 0,
                 "total_task": 0
             }
             user_tasks = user_map.get(user_id, [])
@@ -78,7 +78,7 @@ class DebuggerSvc:
                 priority_val = float(task.get(CstTask.priority, 0))
                 is_on_time_val = float(task.get(CstTask.is_on_time, 0))
                 free_time_val = float(task.get(CstTask.free_time_rto, 0))
-                punct_score_val = float(task.get(CstTask.punct_score, 0))
+                used_time_val = float(task.get(CstTask.used_time_rto, 0))
 
                 # --- Tính độ lệch ---
                 dif_level = abs(level_val - enc_request.level)
@@ -89,11 +89,11 @@ class DebuggerSvc:
                 dif_total[CstTask.level] += dif_level
                 dif_total[CstTask.priority] += dif_priority
                 dif_total[CstTask.free_time_rto] += free_time_val
-                dif_total[CstTask.punct_score] += punct_score_val
+                dif_total[CstTask.used_time_rto] += used_time_val
 
                 # --- Cache values ---
                 max_free_time = cache.get("max_free_time", 0)
-                max_punct = cache.get("punct_score", 0)
+                min_used_time = cache.get("min_used_time", 0)
 
                 # --- Print task ---
                 print(
@@ -103,7 +103,7 @@ class DebuggerSvc:
                     f"priority: {priority_val} (dif={dif_priority}), "
                     f"is_on_time: {is_on_time_val}, "
                     f"free_time_rto: {free_time_val} (max={max_free_time}), "
-                    f"punct_score: {punct_score_val} (max={max_punct})"
+                    f"used_time_rto: {used_time_val} (min={min_used_time})"
                 )
 
             # --- Print summary dif ---
@@ -113,7 +113,7 @@ class DebuggerSvc:
                 f"level: {dif_total[CstTask.level]:.2f}, "
                 f"priority: {dif_total[CstTask.priority]:.2f}, "
                 f"free_time: {dif_total[CstTask.free_time_rto]:.2f}, "
-                f"punct_score: {dif_total[CstTask.punct_score]:.2f}"
+                f"used_time: {dif_total[CstTask.used_time_rto]:.2f}"
             )
             print(
                 "        ↳ 🔹 Avg dif",
@@ -121,7 +121,7 @@ class DebuggerSvc:
                 f"level: {(dif_total[CstTask.level] / dif_total["total_task"]):.2f}, "
                 f"priority: {(dif_total[CstTask.priority] / dif_total["total_task"]):.2f}, "
                 f"free_time: {(dif_total[CstTask.free_time_rto] / dif_total["total_task"]):.2f}, "
-                f"punct_score: {(dif_total[CstTask.punct_score] / dif_total["total_task"]):.2f}, "
+                f"used_time: {(dif_total[CstTask.used_time_rto] / dif_total["total_task"]):.2f}, "
                 f"total_task: {dif_total["total_task"]}"
             )
             print("-" * 40)
@@ -151,7 +151,7 @@ class DebuggerSvc:
                 CstTask.priority: row[CstTask.priority],
                 CstTask.is_on_time: row[CstTask.is_on_time],
                 CstTask.free_time_rto: row[CstTask.free_time_rto],
-                CstTask.punct_score: row[CstTask.punct_score]
+                CstTask.used_time_rto: row[CstTask.used_time_rto]
             }
             user_map.setdefault(uid, []).append(next_elem)
         return user_map
