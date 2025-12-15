@@ -19,7 +19,7 @@ from sklearn.preprocessing import LabelEncoder
 from pandas import Series
 
 from app.dto.task_user import RecommendingUsersRequest, TaskUserRecord
-from app.machine.users_prediction.log import DebuggerSvc
+from app.machine.users_prediction.log import DebuggerSvc, LossDebugger, LossRecorder
 from app.util.constants.UserPrediction import CstTaskConvertor, CstTask, CstUser, CstFiles, CstWeights, CstModel, \
     CstCache, CstSymbols
 
@@ -199,9 +199,25 @@ class RecModelSvc:
 
         label_encoder = cls._load_encoder()
         enc_labels = label_encoder.fit_transform(labels)
+        # loss_recorder = LossRecorder()
 
         model = cls._init_model()
-        model.fit(features, enc_labels)
+        model.fit(
+            features,
+            enc_labels,
+            eval_set=[(features, enc_labels)],
+            eval_metric="multi_logloss",
+            callbacks=[
+                # loss_recorder,
+                lgb.log_evaluation(period=5)
+            ]
+        )
+
+        # LossDebugger.plot_loss(
+        #     loss_recorder.iterations,
+        #     loss_recorder.losses,
+        #     save_path="training_logloss.png"
+        # )
 
         cls._save_model(model)
         cls._save_label_enc(label_encoder)
@@ -323,3 +339,4 @@ class RecModelSvc:
                 DebuggerSvc.stop_terminal_log()
 
 # RecModelSvc.run_test_loss()
+# RecModelSvc.renew_model()
