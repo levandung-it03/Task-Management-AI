@@ -14,8 +14,8 @@ class CstWeights:
     USED_TIME = 0.5
 
 class CstFiles:
-    _ROOT_STORAGE_FOLDER = os.getcwd() + '/app/storage'
-    # _ROOT_STORAGE_FOLDER = 'D:\\Develop\\My_Own_Projects\\intern_project\\fastapi\\app/storage'
+    # _ROOT_STORAGE_FOLDER = os.getcwd() + '/app/storage'
+    _ROOT_STORAGE_FOLDER = 'D:\\Develop\\My_Own_Projects\\intern_project\\fastapi\\app/storage'
     _MODEL_FOLDER = '/model'
     _MODEL_DATA = '/data'
     _LOG = '/log'
