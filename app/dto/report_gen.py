@@ -58,7 +58,6 @@ f"Subtask: {self.subtask_name} ({self.subtask_desc})"
                 ])
         return f"""
 Generate DAILY_PROGRESS_NOTE based on the following project context:\n\n
-Start with Dear Mr of Ms {self.creator_name}, end with {self.employee_name}
 Project: {self.project} ({self.project_desc})\n
 Phase: {self.phase} ({self.phase_desc})\n
 Collection: {self.collection} ({self.collection_desc})\n
