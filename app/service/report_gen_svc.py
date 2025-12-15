@@ -17,6 +17,8 @@ class ReportGenSvc:
 
     @classmethod
     def generate_completed_report(cls, request: ReportRequest) -> str:
+        logger.info(f"[REPORT-GEN] HOST = {cls.REPORT_GEN_HOST}")
+
         prompt = request.to_completed_report_prompt()
         payload = {
             CstModelReq.model: CstModelCfg.MODEL_NAME,
@@ -39,8 +41,9 @@ class ReportGenSvc:
             return text.strip()
 
         except Exception as e:
-            logger.error(CstLog.res_error + e)
-            raise RuntimeError(CstLog.res_def_throw)
+            logger.error(f"{CstLog.res_error}{e}")
+            return "The report could not be generated due to a system error."
+
 
     @classmethod
     def generate_processing_report(cls, request: ReportRequest) -> str:
@@ -66,8 +69,9 @@ class ReportGenSvc:
             return text.strip()
 
         except Exception as e:
-            logger.error(CstLog.res_error + e)
-            raise RuntimeError(CstLog.res_def_throw)
+            logger.error(f"{CstLog.res_error}{e}")
+            return "The report could not be generated due to a system error."
+
 
     @classmethod
     def generate_daily_report(cls, request: ReportRequest) -> str:
@@ -93,5 +97,6 @@ class ReportGenSvc:
             return text.strip()
 
         except Exception as e:
-            logger.error(CstLog.res_error + e)
-            raise RuntimeError(CstLog.res_def_throw)
+            logger.error(f"{CstLog.res_error}{e}")
+            return "The report could not be generated due to a system error."
+
