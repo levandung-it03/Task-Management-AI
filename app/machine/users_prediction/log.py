@@ -95,35 +95,35 @@ class DebuggerSvc:
                 max_free_time = cache.get("max_free_time", 0)
                 min_used_time = cache.get("min_used_time", 0)
 
-                # --- Print task ---
-                print(
-                    f"      - user_id: {task.get('user_id', 'N/A')}, "
-                    f"domain: {domain_val} (dif={request.domain}), "
-                    f"level: {level_val} (dif={dif_level}), "
-                    f"priority: {priority_val} (dif={dif_priority}), "
-                    f"is_on_time: {is_on_time_val}, "
-                    f"free_time_rto: {free_time_val} (max={max_free_time}), "
-                    f"used_time_rto: {used_time_val} (min={min_used_time})"
-                )
+            #     # --- Print task ---
+            #     print(
+            #         f"      - user_id: {task.get('user_id', 'N/A')}, "
+            #         f"domain: {domain_val} (dif={request.domain}), "
+            #         f"level: {level_val} (dif={dif_level}), "
+            #         f"priority: {priority_val} (dif={dif_priority}), "
+            #         f"is_on_time: {is_on_time_val}, "
+            #         f"free_time_rto: {free_time_val} (max={max_free_time}), "
+            #         f"used_time_rto: {used_time_val} (min={min_used_time})"
+            #     )
 
-            # --- Print summary dif ---
-            print(
-                "        ↳ 🔹 Total dif",
-                f"      - user_id: {dif_total[CstUser.user_id]}, "
-                f"level: {dif_total[CstTask.level]:.2f}, "
-                f"priority: {dif_total[CstTask.priority]:.2f}, "
-                f"free_time: {dif_total[CstTask.free_time_rto]:.2f}, "
-                f"used_time: {dif_total[CstTask.used_time_rto]:.2f}"
-            )
-            print(
-                "        ↳ 🔹 Avg dif",
-                f"      - user_id: {dif_total[CstUser.user_id]}, "
-                f"level: {(dif_total[CstTask.level] / dif_total["total_task"]):.2f}, "
-                f"priority: {(dif_total[CstTask.priority] / dif_total["total_task"]):.2f}, "
-                f"free_time: {(dif_total[CstTask.free_time_rto] / dif_total["total_task"]):.2f}, "
-                f"used_time: {(dif_total[CstTask.used_time_rto] / dif_total["total_task"]):.2f}, "
-                f"total_task: {dif_total["total_task"]}"
-            )
+            # # --- Print summary dif ---
+            # print(
+            #     "        ↳ 🔹 Total dif",
+            #     f"      - user_id: {dif_total[CstUser.user_id]}, "
+            #     f"level: {dif_total[CstTask.level]:.2f}, "
+            #     f"priority: {dif_total[CstTask.priority]:.2f}, "
+            #     f"free_time: {dif_total[CstTask.free_time_rto]:.2f}, "
+            #     f"used_time: {dif_total[CstTask.used_time_rto]:.2f}"
+            # )
+            # print(
+            #     "        ↳ 🔹 Avg dif",
+            #     f"      - user_id: {dif_total[CstUser.user_id]}, "
+            #     f"level: {(dif_total[CstTask.level] / dif_total["total_task"]):.2f}, "
+            #     f"priority: {(dif_total[CstTask.priority] / dif_total["total_task"]):.2f}, "
+            #     f"free_time: {(dif_total[CstTask.free_time_rto] / dif_total["total_task"]):.2f}, "
+            #     f"used_time: {(dif_total[CstTask.used_time_rto] / dif_total["total_task"]):.2f}, "
+            #     f"total_task: {dif_total["total_task"]}"
+            # )
             print("-" * 40)
 
         print("======================================================\n")
