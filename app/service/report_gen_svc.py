@@ -29,7 +29,7 @@ class ReportGenSvc:
             CstModelReq.top_p: CstModelCfg.DEF_COMPLETED_REPORT_TOP_P
         }
         try:
-            response = requests.post(cls.REPORT_GEN_HOST, json=payload, timeout=20)
+            response = requests.post(cls.REPORT_GEN_HOST, json=payload, timeout=CstModelCfg.DEF_TIME_OUT)
             response.raise_for_status()
 
             data = response.json()
@@ -56,7 +56,7 @@ class ReportGenSvc:
             CstModelReq.top_p: CstModelCfg.DEF_PROCESSING_REPORT_TOP_P
         }
         try:
-            response = requests.post(cls.REPORT_GEN_HOST, json=payload, timeout=20)
+            response = requests.post(cls.REPORT_GEN_HOST, json=payload, timeout=CstModelCfg.DEF_TIME_OUT)
             response.raise_for_status()
 
             data = response.json()
@@ -83,7 +83,7 @@ class ReportGenSvc:
             CstModelReq.top_p: CstModelCfg.DEF_DAILY_REPORT_TOP_P
         }
         try:
-            response = requests.post(cls.REPORT_GEN_HOST, json=payload, timeout=20)
+            response = requests.post(cls.REPORT_GEN_HOST, json=payload, timeout=CstModelCfg.DEF_TIME_OUT)
             response.raise_for_status()
 
             data = response.json()
