@@ -21,7 +21,7 @@ class TaskUserPredSvc:
         ranked_usr_ids_df = RecModelSvc.recommend(request)
 
         user_map = DebuggerSvc.get_user_map(DatasetSvc.get_dataset())
-        DebuggerSvc.log_prediction(ranked_usr_ids_df, user_map, request, CacheSvc.get_cache(), 15)
+        DebuggerSvc.log_prediction(ranked_usr_ids_df, user_map, request, CacheSvc.get_cache(), 5)
         DebuggerSvc.stop_terminal_log()
 
         return [
