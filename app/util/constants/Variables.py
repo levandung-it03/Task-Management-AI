@@ -18,7 +18,7 @@ class Api:
     METHOD_OPTIONS = "OPTIONS"
     API_PRIVATE_PREFIX = "/api/private"
     API_TASK_USER = "/task-user-pred"
-    API_REPORT_GEN = "/report-gen"
+    API_REPORT_GEN = "/report"
 
 class Locale:
     DEFAULT_LANG = "en"
