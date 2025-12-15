@@ -3,9 +3,9 @@ import os
 
 import pandas as pd
 
-from app.dto.task_user import EncTskUsrPredRequest, RecommendingUsersRequest
+from app.dto.task_user import RecommendingUsersRequest
 from app.util.constants.UserPrediction import CstTaskConvertor, CstUser, CstFiles, CstTask
-
+import matplotlib.pyplot as plt
 
 class Tee:
     def __init__(self, filename, mode="a"):
@@ -22,6 +22,34 @@ class Tee:
     def flush(self):
         self.file.flush()
         self.stdout.flush()
+
+
+class LossRecorder:
+    def __init__(self):
+        self.iterations = []
+        self.losses = []
+
+    def __call__(self, env):
+        for data_name, eval_name, loss, _ in env.evaluation_result_list:
+            if eval_name == "multi_logloss":
+                self.iterations.append(env.iteration + 1)
+                self.losses.append(loss)
+
+class LossDebugger:
+
+    @classmethod
+    def plot_loss(cls, iterations, losses, save_path: str = None):
+        plt.figure(figsize=(8, 5))
+        plt.plot(iterations, losses, marker="o")
+        plt.xlabel("Iteration")
+        plt.ylabel("Multi Log Loss")
+        plt.title("Training Loss Curve")
+        plt.grid(True)
+
+        if save_path:
+            plt.savefig(save_path, dpi=150)
+
+        plt.show()
 
 
 class DebuggerSvc:
