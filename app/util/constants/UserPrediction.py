@@ -7,11 +7,11 @@ class CstSymbols:
     UNDERLINE = "_"
 
 class CstWeights:
-    LEVEL = 6
-    PRIORITY = 2
-    IS_ON_TIME = 1.5
-    FREE_TIME = 0.7
-    USED_TIME = 0.3
+    LEVEL = 50
+    PRIORITY = 30
+    IS_ON_TIME = 10
+    FREE_TIME = 9.5
+    USED_TIME = 0.5
 
 class CstFiles:
     _ROOT_STORAGE_FOLDER = os.getcwd() + '/app/storage'
