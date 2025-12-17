@@ -1,0 +1,11 @@
+
+viết thêm một .py đọc từ "path/mypath" để ở biến global đầu file cho việc chỉnh sửa, thống kê dataset như sau:
++ user_domain
++ Total Task
++ Total level 0/1/2/3
++ Max/min/avg free_time
++ Max/min/avg used_time
++ Count late/on-time
++ Late/On-time perc(percentage)
+
+và sort theo domain, On-time perc (cao tới thấp) và cuối cùng là user_id

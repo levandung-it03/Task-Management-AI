@@ -10,6 +10,7 @@ $ pip install "numpy<2.0"
 """
 import os
 
+import numpy as np
 import pandas as pd
 import lightgbm as lgb
 import json
@@ -19,9 +20,10 @@ from sklearn.preprocessing import LabelEncoder
 from pandas import Series
 
 from app.dto.task_user import RecommendingUsersRequest, TaskUserRecord
-from app.machine.users_prediction.log import DebuggerSvc, LossDebugger, LossRecorder
+from app.machine.users_prediction.log import LossRecorder, LossDebugger
 from app.util.constants.UserPrediction import CstTaskConvertor, CstTask, CstUser, CstFiles, CstWeights, CstModel, \
     CstCache, CstSymbols
+from sklearn.metrics import classification_report
 
 
 class DatasetSvc:
@@ -108,7 +110,7 @@ class CacheSvc:
 
         cache[CstCache.max_free_time] = max(df[CstTask.free_time_rto])
         cache[CstCache.is_on_time] = CstCache.def_is_on_time
-        cache[CstCache.min_used_time] = CstCache.def_min_used_time
+        cache[CstCache.min_used_time] = min(df[CstTask.used_time_rto])
 
         cls._save_cache(cache)
 
@@ -159,17 +161,17 @@ class RecModelSvc:
 
     # -------Model Definition---------
     @classmethod
-    def _init_model(cls, n_estimators=100):
+    def _init_model(cls, n_estimators=CstModel.n_estimators):
         return lgb.LGBMClassifier(
             objective="multiclass",
-            random_state=42,    # Model separate dataset with a fixed-size (popular in community).
-            n_estimators=n_estimators,  # Num of trees.
-            learning_rate=0.05,
-            num_leaves=15,
-            max_depth=5,
-            min_data_in_leaf=5,     # From DecisionTree.
-            metric="multi_logloss", # Support output score.
-            verbosity=-1,           # Tur-off default log.
+            random_state=42,        # Model separate dataset with a fixed-size (popular in community).
+            n_estimators=n_estimators,# Num of trees.
+            learning_rate=0.05,     # Contribution of each tree (usually used with n=800, it's 0.1 with n=500)
+            num_leaves=31,          # Default from LightGBM
+            max_depth=6,            # leaves <= 2^depth
+            min_data_in_leaf=20,    # From DecisionTree.
+            metric="multi_logloss", # Support output loss_function score.
+            verbosity=-1,           # Turn-off default log.
         )
 
     @classmethod
@@ -189,6 +191,22 @@ class RecModelSvc:
         return model
 
     @classmethod
+    def _calculate_score(cls, loss_recorder: LossRecorder):
+        LossDebugger.plot_loss(
+            loss_recorder.iterations,
+            loss_recorder.losses,
+            save_path=("training_logloss_" + str(CstModel.n_estimators) + ".png")
+        )
+        return
+        # print(
+        #     classification_report(
+        #         y_true,
+        #         y_pred,
+        #         digits=4
+        #     )
+        # )
+
+    @classmethod
     def renew_model(cls, df: pd.DataFrame = None):
         if df is None:
             df = DatasetSvc.get_dataset()
@@ -199,25 +217,17 @@ class RecModelSvc:
 
         label_encoder = cls._load_encoder()
         enc_labels = label_encoder.fit_transform(labels)
-        # loss_recorder = LossRecorder()
 
+        loss_recorder = LossRecorder()
         model = cls._init_model()
         model.fit(
             features,
             enc_labels,
             eval_set=[(features, enc_labels)],
             eval_metric="multi_logloss",
-            callbacks=[
-                # loss_recorder,
-                lgb.log_evaluation(period=5)
-            ]
+            callbacks=[loss_recorder, lgb.log_evaluation(period=5)]
         )
-
-        # LossDebugger.plot_loss(
-        #     loss_recorder.iterations,
-        #     loss_recorder.losses,
-        #     save_path="training_logloss.png"
-        # )
+        cls._calculate_score(loss_recorder)
 
         cls._save_model(model)
         cls._save_label_enc(label_encoder)
@@ -251,7 +261,10 @@ class RecModelSvc:
         new_model.fit(
             features,
             enc_labels,
-            init_model=old_model
+            init_model=old_model,
+            eval_set=[(features, enc_labels)],
+            eval_metric="multi_logloss",
+            callbacks=[lgb.log_evaluation(period=5)]
         )
         cls._save_model(new_model)  # save model
 
@@ -264,8 +277,8 @@ class RecModelSvc:
         ]
 
         # result = result.head(request.num_of_emp)  # Rely on main Backend system.
-        result[CstUser.user_id] = result[CstTask.label_name].str.split(CstSymbols.UNDERLINE).str[0].astype(int)
-        result[CstTask.domain] = result[CstTask.label_name].str.split(CstSymbols.UNDERLINE).str[1].astype(str)
+        result[CstUser.user_id] = result[CstTask.label_name].str.split(CstSymbols.SEPARATOR).str[0].astype(int)
+        result[CstTask.domain] = result[CstTask.label_name].str.split(CstSymbols.SEPARATOR).str[1].astype(str)
         return result
 
     @classmethod
@@ -318,25 +331,63 @@ class RecModelSvc:
         RecModelSvc.renew_model()
 
     @classmethod
+    def _top_k_accuracy_test(cls, k_list=(1, 3, 5)) -> dict:
+        df_test = pd.read_csv(CstFiles.TEST_DATA_FILE)
+        df_test = cls.pre_handle_dataset(df_test)
+
+        X_test = df_test.drop(columns=[CstTask.label_name])
+        labels = df_test[CstTask.label_name]
+
+        label_encoder = cls._load_encoder()
+        y_test = label_encoder.transform(labels)
+
+        model = cls._load_model()
+        proba = model.predict_proba(X_test)
+
+        results = {}
+
+        # -------- Top-K Accuracy --------
+        for k in k_list:
+            correct = 0
+            for i in range(len(y_test)):
+                top_k_idx = proba[i].argsort()[-k:]
+                if y_test[i] in top_k_idx:
+                    correct += 1
+
+            results[f"top_{k}_accuracy"] = correct / len(y_test)
+
+        # -------- Optional: detailed ranking (debug) --------
+        results["num_samples"] = len(y_test)
+        results["num_classes"] = proba.shape[1]
+
+        return results
+
+    @classmethod
     def run_test_loss(cls):
         RecModelSvc.start_server()
-        # simulate_streaming()
 
-        default_domain = CstTaskConvertor.str_domains[1]
-        for lidx, level_str in enumerate(CstTaskConvertor.map_levels.keys()):
-            for pidx, priority_str in enumerate(CstTaskConvertor.map_priorities.keys()):
-                DebuggerSvc.start_terminal_log()
-                print(f"\n====================== BATCH{lidx}-{pidx} ======================")
-                request = RecommendingUsersRequest(
-                    domain=default_domain,
-                    level="NORMAL",
-                    priority=priority_str
-                )
-                DebuggerSvc.log_request(request)
-                recommendations = RecModelSvc.recommend(request)
-                user_map = DebuggerSvc.get_user_map(DatasetSvc.get_dataset())
-                DebuggerSvc.log_prediction(recommendations, user_map, request, CacheSvc.get_cache())
-                DebuggerSvc.stop_terminal_log()
+        results = cls._top_k_accuracy_test(k_list = [1, 3, 5, 10, 20])
+        print("\n".join([
+            f"{k}: {v}"
+            for k, v in results.items()
+        ]))
 
-# RecModelSvc.run_test_loss()
+
+        # default_domain = CstTaskConvertor.str_domains[1]
+        # for lidx, level_str in enumerate(CstTaskConvertor.map_levels.keys()):
+        #     for pidx, priority_str in enumerate(CstTaskConvertor.map_priorities.keys()):
+        #         DebuggerSvc.start_terminal_log()
+        #         print(f"\n====================== BATCH{lidx}-{pidx} ======================")
+        #         request = RecommendingUsersRequest(
+        #             domain=default_domain,
+        #             level=level_str,
+        #             priority=priority_str
+        #         )
+        #         DebuggerSvc.log_request(request)
+        #         recommendations = RecModelSvc.recommend(request)
+        #         user_map = DebuggerSvc.get_user_map(DatasetSvc.get_dataset())
+        #         DebuggerSvc.log_prediction(recommendations, user_map, request, CacheSvc.get_cache())
+        #         DebuggerSvc.stop_terminal_log()
+
+RecModelSvc.run_test_loss()
 # RecModelSvc.renew_model()

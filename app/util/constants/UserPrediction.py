@@ -4,14 +4,14 @@ import pandas as pd
 from app.dto.task_user import TaskUserRecord, RecommendingUsersRequest, EncTskUsrPredRequest
 
 class CstSymbols:
-    UNDERLINE = "_"
+    SEPARATOR = "__"
 
 class CstWeights:
-    LEVEL = 50
-    PRIORITY = 30
-    IS_ON_TIME = 10
-    FREE_TIME = 9.5
-    USED_TIME = 0.5
+    LEVEL = 1
+    PRIORITY = 1
+    IS_ON_TIME = 1
+    FREE_TIME = 1
+    USED_TIME = 1
 
 class CstFiles:
     # _ROOT_STORAGE_FOLDER = os.getcwd() + '/app/storage'
@@ -24,9 +24,11 @@ class CstFiles:
     LABEL_ENC_FILE = _ROOT_STORAGE_FOLDER + _MODEL_FOLDER + '/user_pred_label_enc.pkl'
 
     DATA_BACKUP_FILE = _ROOT_STORAGE_FOLDER + _MODEL_DATA + '/user_pred_ds_backup.csv'
-    DATA_FILE = _ROOT_STORAGE_FOLDER + _MODEL_DATA + '/user_pred_ds.csv'
+    # DATA_FILE = _ROOT_STORAGE_FOLDER + _MODEL_DATA + '/user_pred_ds.csv'
     CACHE_FILE = _ROOT_STORAGE_FOLDER + _MODEL_DATA + '/user_pred_cache.json'
-    TEST_DATA_FILE = _ROOT_STORAGE_FOLDER + _MODEL_DATA + '/user_pred_test_ds.csv'
+    TRAIN_DATA_FILE = _ROOT_STORAGE_FOLDER + _MODEL_DATA + '/user_pred_train.csv'
+    TEST_DATA_FILE = _ROOT_STORAGE_FOLDER + _MODEL_DATA + '/user_pred_test.csv'
+    DATA_FILE = TRAIN_DATA_FILE
 
     LOG_FILE = _ROOT_STORAGE_FOLDER + _LOG + '/results.txt'
 
@@ -41,7 +43,7 @@ class CstCache:
     min_used_time = 'min_used_time'
     def_is_on_time = 1
     def_max_free_time = 1.0
-    def_min_used_time = 0.0
+    def_min_used_time = 1.0
 
 
 class CstTask:
@@ -75,6 +77,7 @@ class CstModel:
         CstTask.used_time_rto
     ]
     type_category = "category"
+    n_estimators = 800
 
 
 class CstTaskConvertor:
@@ -106,7 +109,7 @@ class CstTaskConvertor:
         df = pd.DataFrame(dicts)
 
         df[CstTask.label_name]  = (df[CstUser.user_id].astype(str)
-                                   + CstSymbols.UNDERLINE
+                                   + CstSymbols.SEPARATOR
                                    + df[CstTask.domain].astype(str))
         df[CstTask.priority]    = df[CstTask.priority].map(cls.map_priorities)
         df[CstTask.level]       = df[CstTask.level].map(cls.map_levels)
