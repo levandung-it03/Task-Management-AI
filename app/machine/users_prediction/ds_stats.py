@@ -6,7 +6,7 @@ import pandas as pd
 from app.util.constants.UserPrediction import CstFiles
 
 DATASET_PATH = CstFiles.DATA_FILE
-OUTPUT_PATH = "D:\\Develop\\My_Own_Projects\\intern_project\\fastapi\\app\\storage\\_ignored\\users_prediction\\ds_stats_result.csv"
+OUTPUT_PATH = CstFiles._ROOT_STORAGE_FOLDER + "\\_ignored\\users_prediction\\ds_stats_result.csv"
 
 # =========================
 # LOAD DATA
@@ -49,6 +49,10 @@ def summarize_user(group: pd.DataFrame) -> pd.Series:
         "Level 1 Count": level_counts.get(1, 0),
         "Level 2 Count": level_counts.get(2, 0),
         "Level 3 Count": level_counts.get(3, 0),
+
+        "Delayed Time Max": round(group["delayed_time_rto"].max(), 3),
+        "Delayed Time Min": round(group["delayed_time_rto"].min(), 3),
+        "Delayed Time Avg": round(group["delayed_time_rto"].mean(), 3),
 
         "Free Time Max": round(group["free_time_rto"].max(), 3),
         "Free Time Min": round(group["free_time_rto"].min(), 3),

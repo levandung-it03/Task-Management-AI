@@ -1,5 +1,8 @@
 {
     "is_on_time": 1,
     "max_free_time": 0.8,
-    "min_used_time": 0.001
+    "min_used_time": 0.15,
+    "min_delayed_time": 0.0,
+    "max_free_scr": 0.0,
+    "min_bad_scr": 0.0
 }

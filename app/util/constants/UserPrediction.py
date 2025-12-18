@@ -12,10 +12,14 @@ class CstWeights:
     IS_ON_TIME = 1
     FREE_TIME = 1
     USED_TIME = 1
+    DELAYED_TIME = 1
+    FREE_SCR = 1
+    BAD_SCR = 1
 
 class CstFiles:
     # _ROOT_STORAGE_FOLDER = os.getcwd() + '/app/storage'
-    _ROOT_STORAGE_FOLDER = 'D:\\Develop\\My_Own_Projects\\intern_project\\fastapi\\app/storage'
+    # _ROOT_STORAGE_FOLDER = 'D:\\Develop\\My_Own_Projects\\intern_project\\fastapi\\app/storage'
+    _ROOT_STORAGE_FOLDER = 'C:\\Users\\TSB\\Workspace\\DEV\\PERSONAL\\Task-Management-AI-main\\app\\storage'
     _MODEL_FOLDER = '/model'
     _MODEL_DATA = '/data'
     _LOG = '/log'
@@ -24,11 +28,11 @@ class CstFiles:
     LABEL_ENC_FILE = _ROOT_STORAGE_FOLDER + _MODEL_FOLDER + '/user_pred_label_enc.pkl'
 
     DATA_BACKUP_FILE = _ROOT_STORAGE_FOLDER + _MODEL_DATA + '/user_pred_ds_backup.csv'
-    # DATA_FILE = _ROOT_STORAGE_FOLDER + _MODEL_DATA + '/user_pred_ds.csv'
+    DATA_FILE = _ROOT_STORAGE_FOLDER + _MODEL_DATA + '/user_pred_ds.csv'
     CACHE_FILE = _ROOT_STORAGE_FOLDER + _MODEL_DATA + '/user_pred_cache.json'
     TRAIN_DATA_FILE = _ROOT_STORAGE_FOLDER + _MODEL_DATA + '/user_pred_train.csv'
     TEST_DATA_FILE = _ROOT_STORAGE_FOLDER + _MODEL_DATA + '/user_pred_test.csv'
-    DATA_FILE = TRAIN_DATA_FILE
+    # DATA_FILE = TRAIN_DATA_FILE
 
     LOG_FILE = _ROOT_STORAGE_FOLDER + _LOG + '/results.txt'
 
@@ -42,7 +46,7 @@ class CstCache:
     max_free_time = 'max_free_time'
     min_used_time = 'min_used_time'
     def_is_on_time = 1
-    def_max_free_time = 1.0
+    def_max_free_time = 0.0
     def_min_used_time = 1.0
 
 
@@ -81,10 +85,10 @@ class CstModel:
 
 
 class CstTaskConvertor:
-    map_priorities = {"URGENT": 3, "HIGH": 2, "NORMAL": 1, "LOW": 0}
+    map_priorities = {"URGENT": 4, "HIGH": 3, "NORMAL": 2, "LOW": 1}
     enc_priorities = map_priorities.values()
 
-    map_levels = {"HARD": 3, "ADVANCED": 2, "NORMAL": 1, "LIGHT": 0}
+    map_levels = {"HARD": 4, "ADVANCED": 3, "NORMAL": 2, "LIGHT": 1}
     enc_levels = list(map_levels.values())
 
     str_domains = ["BUSINESS_ANALYSIS", "BACKEND", "FRONTEND", "DEPLOY", "DESIGN", "TEST", "DOCUMENTATION",

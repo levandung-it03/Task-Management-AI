@@ -10,7 +10,6 @@ $ pip install "numpy<2.0"
 """
 import os
 
-import numpy as np
 import pandas as pd
 import lightgbm as lgb
 import json
@@ -23,7 +22,6 @@ from app.dto.task_user import RecommendingUsersRequest, TaskUserRecord
 from app.machine.users_prediction.log import LossRecorder, LossDebugger
 from app.util.constants.UserPrediction import CstTaskConvertor, CstTask, CstUser, CstFiles, CstWeights, CstModel, \
     CstCache, CstSymbols
-from sklearn.metrics import classification_report
 
 
 class DatasetSvc:
@@ -123,7 +121,7 @@ class RecModelSvc:
         df = df.copy().dropna()
         df.drop(labels=[
             CstUser.user_id,
-            CstTask.domain
+            CstTask.domain,
         ], axis=1, inplace=True)
         df[CstTask.level] *= CstWeights.LEVEL
         df[CstTask.priority] *= CstWeights.PRIORITY
@@ -138,7 +136,7 @@ class RecModelSvc:
         row[CstTask.priority] *= CstWeights.PRIORITY
         row[CstTask.is_on_time] *= CstWeights.IS_ON_TIME
         row[CstTask.free_time_rto] *= CstWeights.FREE_TIME
-        row[CstTask.used_time_rto] *= CstWeights.USED_TIME
+        row[CstTask.is_on_time] *= CstWeights.IS_ON_TIME
         return row
 
     @classmethod
@@ -168,7 +166,7 @@ class RecModelSvc:
             n_estimators=n_estimators,# Num of trees.
             learning_rate=0.05,     # Contribution of each tree (usually used with n=800, it's 0.1 with n=500)
             num_leaves=31,          # Default from LightGBM
-            max_depth=6,            # leaves <= 2^depth
+            max_depth=5,            # leaves <= 2^depth
             min_data_in_leaf=20,    # From DecisionTree.
             metric="multi_logloss", # Support output loss_function score.
             verbosity=-1,           # Turn-off default log.
@@ -235,6 +233,14 @@ class RecModelSvc:
         return model
 
     @classmethod
+    def upsert_cache_by_new_records(cls, new_records: list[TaskUserRecord]) -> None:
+        max_free_time = max([line.free_time_rto for line in new_records])
+        min_used_time = min([line.used_time_rto for line in new_records])
+
+        CacheSvc.upsert_max_value(CstCache.max_free_time, max_free_time)    # save max_free_time
+        CacheSvc.upsert_min_value(CstCache.min_used_time, min_used_time)    # save min_used_time
+
+    @classmethod
     def update_model(cls, new_records: list[TaskUserRecord]) -> None:
         print("📈 Updating classifier model...")
 
@@ -242,10 +248,7 @@ class RecModelSvc:
         df = DatasetSvc.update_dataset(new_df)  # save dataset
         df = cls.pre_handle_dataset(df)
 
-        max_free_time = max([line.free_time_rto for line in new_records])
-        min_used_time = min([line.used_time_rto for line in new_records])
-        CacheSvc.upsert_max_value(CstCache.max_free_time, max_free_time)   # save max_free_time
-        CacheSvc.upsert_min_value(CstCache.min_used_time, min_used_time)   # save min_used_time
+        cls.upsert_cache_by_new_records(new_records)
 
         label_encoder = cls._load_encoder()
         label_encoder.fit(df[CstTask.label_name])
@@ -301,7 +304,7 @@ class RecModelSvc:
             CstTask.priority: enc_request.priority,
             CstTask.is_on_time: cached_values[CstCache.is_on_time],
             CstTask.free_time_rto: cached_values[CstCache.max_free_time],
-            CstTask.used_time_rto: cached_values[CstCache.min_used_time]
+            CstTask.used_time_rto: cached_values[CstCache.min_used_time],
         }])
         # -------------prediction---------------
         predicted_res = model.booster_.predict(input_df, raw_score=True)

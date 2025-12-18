@@ -19,6 +19,7 @@ USER_LEVEL_SCORE = {
     "senior": 3
 }
 
+
 # =========================
 # HARD CONSTRAINT CHECKS
 # =========================
@@ -34,9 +35,13 @@ def check_hard_constraints(df):
     if not bad.empty:
         errors.append(f"❌ is_on_time=1 but free+used > 1 ({len(bad)})")
 
-    bad = df[~df.priority.between(0, 3)]
+    bad = df[~df.level.between(1, 4)]
     if not bad.empty:
-        errors.append("❌ priority out of [0,3]")
+        errors.append("❌ level out of [1,4]")
+
+    bad = df[~df.priority.between(1, 4)]
+    if not bad.empty:
+        errors.append("❌ priority out of [1,4]")
 
     bad = df[~df.free_time_rto.between(0, 0.8)]
     if not bad.empty:
@@ -45,6 +50,52 @@ def check_hard_constraints(df):
     bad = df[~df.used_time_rto.between(0, 3)]
     if not bad.empty:
         errors.append("❌ used_time_rto out of [0,3]")
+        # =========================
+        # NEW CHECKS
+        # =========================
+
+        # ---- delayed_time_rto basic range ----
+        bad = df[df.delayed_time_rto < 0.05]
+        if not bad.empty:
+            errors.append(f"❌ delayed_time_rto < 0.05 ({len(bad)})")
+
+        # ---- on-time: free + used + delayed <= 1 ----
+        bad = df[
+            (df.is_on_time == 1) &
+            ((df.free_time_rto + df.used_time_rto + df.delayed_time_rto) > 1.001)
+            ]
+        if not bad.empty:
+            errors.append(
+                f"❌ is_on_time=1 but free+used+delayed > 1 ({len(bad)})"
+            )
+
+        # ---- late: delayed_time_rto in [0.05, 1.8] ----
+        bad = df[
+            (df.is_on_time == 0) &
+            (~df.delayed_time_rto.between(0.05, 1.8))
+            ]
+        if not bad.empty:
+            errors.append(
+                f"❌ is_on_time=0 but delayed_time_rto not in [0.05,1.8] ({len(bad)})"
+            )
+
+        # ---- free_time_scr correctness ----
+        bad = df[
+            (df.free_time_scr - df.free_time_rto * df.priority).abs() > eps
+            ]
+        if not bad.empty:
+            errors.append(
+                f"❌ free_time_scr != free_time_rto * priority ({len(bad)})"
+            )
+
+        # ---- bad_time_scr correctness ----
+        bad = df[
+            (df.bad_time_scr - df.delayed_time_rto * df.priority).abs() > eps
+            ]
+        if not bad.empty:
+            errors.append(
+                f"❌ bad_time_scr != delayed_time_rto * priority ({len(bad)})"
+            )
 
     return errors
 
@@ -112,6 +163,7 @@ df["user_level_inferred"] = df.apply(
     lambda r: infer_user_level(r.user_id, r.domain),
     axis=1
 )
+
 
 # =========================
 # STATISTICAL LOGIC CHECKS

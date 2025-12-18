@@ -1,6 +1,5 @@
-hãy viết chương trình python generate ra dataset với yêu cầu sau:
 1. Các field gồm:
-user_domain	user_id	domain	level	priority	is_on_time	free_time_rto	used_time_rto
+user_domain	user_id	domain	level	priority	is_on_time	free_time_rto	used_time_rto delayed_time_rto free_time_scr bad_time_scr
 2. Tỉ lệ:
 + 150 user gồm:
 
@@ -31,8 +30,11 @@ user_domain	user_id	domain	level	priority	is_on_time	free_time_rto	used_time_rto
 3. Kiểu dữ liệu:
 + user_domain = f"{user_id}__{domain}"
 + is_on_time = 0 hoặc 1 (không trễ/trễ)
-+ free_time_rto = số thực [0;0.8] (dư giả thời gian là bao nhiêu).
++ free_time_rto = số thực [0;0.8] (dư giả thời gian là bao nhiêu, có thể không dư xíu nào là =0).
 + used_time_rto = số thực [0.2;3] (lượng thời gian sử dụng là bao nhiêu, thật ra nó tới vô cùng, nhưng tôi cho 3 cho chắc).
++ delayed_time_rto = số thực [0;0.8] (dư giả thời gian là bao nhiêu).
++ free_time_scr = số thực [0; 1*(max_priority+1)=4] (score): tính bằng free_time_rto * priority
++ bad_time_scr = số thư [0;+ vô cùng] (score): tính bằng delayed_time_rto * priority
 
 4. Quy tắc:
 + Mỗi nhân viên sẽ có lịch sử từ 50-70 dòng.
@@ -40,16 +42,19 @@ user_domain	user_id	domain	level	priority	is_on_time	free_time_rto	used_time_rto
 ++ Mặc định free_time_rto=0.
 ++ Và used_time_rto không phụ thuộc vào tham số nào cả (từ 0 đến 3).
 + is_on_time=1 thì (used_time_rto + free_time_rto) <= 1. (dư giả + sử dụng không được quá thời gian tổng, nếu nộp đúng giờ).
++ delayed_time_rto: nếu nộp đúng giờ, thì (delayed_time_rto + used_time_rto + free_time_rto) <= 1. Còn nếu nộp trễ thì nằm trong khoảng [0.05;1.8]
++ free_time_scr (score): tính bằng free_time_rto * priority
++ bad_time_scr (score): tính bằng delayed_time_rto * priority
 
 5. Quy luật generate:
 + Độ khó (level) của task khi generate: càng cao càng khó.
-++ senior thường làm task có level = 2 (chiếm 15-30%), level = 3 (đúng level, chiếm 70-80%).
+++ senior thường làm task có level = 3 (chiếm 15-30%), level = 4 (đúng level, chiếm 70-80%).
 ++ junior thường làm task có level = 2 (chiếm 20-30%) và 3 (đúng với level, và chiếm 70-80%).
-++ fresher thường làm task có level = 0 và 1 (đúng với level, và chiếm 95%) và 2 (chiếm 5%).
+++ fresher thường làm task có level = 1 (đúng với level, và chiếm 95%) và 2 (chiếm 5%).
 
-+ Độ ưu tiên (priority) của task khi generate: ngẫu nhiên và đều nhau từ 0 tới 3 (3 là khó nhất) (cứ random thoải mái).
++ Độ ưu tiên (priority) của task khi generate: ngẫu nhiên và đều nhau từ 1 tới 4 (4 là khó nhất) (cứ random thoải mái).
 + Các tham số khác:
-++ Nếu priority = 0, 1 hoặc 3 và nếu:
+++ Nếu priority = 1, 2 hoặc 3 và nếu:
 +++ Làm đúng với level: có 70% xác suất is_on_time=1 và free_time_rto > 0, used_time_rto sẽ nằm ở khoảng (0.15 trở lên tuỳ vào free_time_rto).
 +++ Làm dễ hơn so với level: có 95% xác suất is_on_time=1 và free_time_rto > 0, used_time_rto sẽ nằm ở khoảng (0.15 đến 0.5, và cũng tuỳ vào free_time_rto).
 +++ Làm dễ khó hơn so với level: có 70% xác suất is_on_time=0 (tất nhiên free_time_rto = 0), used_time_rto sẽ nằm ở khoảng (0.8 trở lên).

@@ -51,33 +51,35 @@ add_users(146, 150, "HR", {
 
 USER_LEVEL_SCORE = {
     "fresher": 1,
-    "junior": 2,
-    "senior": 3
+    "junior": 3,
+    "senior": 4
 }
 
 # =========================
-# TASK LEVEL GENERATOR
+# TASK LEVEL GENERATOR (ĐÚNG MÔ TẢ)
 # =========================
 
 def generate_task_level(user_level):
     r = random.random()
 
     if user_level == "senior":
-        return 2 if r < random.uniform(0.15, 0.30) else 3
+        return 3 if r < random.uniform(0.15, 0.30) else 4
 
     if user_level == "junior":
         return 2 if r < random.uniform(0.20, 0.30) else 3
 
     # fresher
-    return random.choice([0, 1]) if r < 0.95 else 2
+    return 1 if r < 0.95 else 2
+
 
 # =========================
-# TIME + STATUS GENERATOR
+# TIME + STATUS GENERATOR (SỬA CHUẨN)
 # =========================
 
 def generate_time_and_status(priority, task_level, user_level):
     user_lv = USER_LEVEL_SCORE[user_level]
 
+    # xác định độ khó
     if task_level < user_lv:
         difficulty = "easier"
     elif task_level == user_lv:
@@ -85,49 +87,64 @@ def generate_time_and_status(priority, task_level, user_level):
     else:
         difficulty = "harder"
 
-    # -------- probability --------
-    if priority in [0, 1, 3]:
-        prob_map = {
+    # =========================
+    # PRIORITY 1,2,3
+    # =========================
+    if priority in [1, 2, 3]:
+        ontime_prob = {
             "equal": 0.70,
             "easier": 0.95,
-            "harder": 0.30
+            "harder": 0.30   # 70% trễ
         }
-        used_min_map = {
-            "equal": 0.15,
-            "easier": 0.15,
-            "harder": 0.80
+        used_range_ontime = {
+            "equal": (0.15, 1.0),
+            "easier": (0.15, 0.50)
         }
-    else:  # priority == 2
-        prob_map = {
+        used_range_late = (0.8, 3.0)
+
+    # =========================
+    # PRIORITY 4
+    # =========================
+    else:
+        ontime_prob = {
             "equal": 0.45,
             "easier": 0.80,
-            "harder": 0.10
+            "harder": 0.10   # 90% trễ
         }
-        used_min_map = {
-            "equal": 0.50,
-            "easier": 0.30,
-            "harder": 1.50
+        used_range_ontime = {
+            "equal": (0.50, 1.0),
+            "easier": (0.30, 0.50)
         }
+        used_range_late = (1.5, 3.0)
 
-    # roll on-time first
-    want_on_time = random.random() < prob_map[difficulty]
+    # =========================
+    # roll is_on_time
+    # =========================
+    is_on_time = 1 if random.random() < ontime_prob[difficulty] else 0
 
-    # -------- late --------
-    if not want_on_time:
-        return 0, 0.0, round(random.uniform(0, 3), 3)
+    # =========================
+    # LATE CASE (KHÔNG PHỤ THUỘC GÌ)
+    # =========================
+    if is_on_time == 0:
+        used_time = round(random.uniform(*used_range_late), 3)
+        return 0, 0.0, used_time
 
-    # -------- attempt on time --------
-    free_time = round(random.uniform(0.01, 0.8), 3)
-    used_min = used_min_map[difficulty]
-    remaining = 1 - free_time
+    # =========================
+    # ON TIME CASE
+    # =========================
+    free_time = round(random.uniform(0, 0.8), 3)
 
-    # 🚨 PHYSICAL IMPOSSIBILITY CHECK
-    if used_min > remaining:
-        # impossible to be on time -> force late
-        return 0, 0.0, round(random.uniform(used_min, 3), 3)
+    min_used, max_used = used_range_ontime.get(difficulty, (0.15, 1.0))
+    max_used = min(max_used, 1 - free_time)
 
-    used_time = round(random.uniform(used_min, remaining), 3)
+    # nếu không thể đúng giờ → ép trễ
+    if max_used < min_used:
+        used_time = round(random.uniform(*used_range_late), 3)
+        return 0, 0.0, used_time
+
+    used_time = round(random.uniform(min_used, max_used), 3)
     return 1, free_time, used_time
+
 
 # =========================
 # DATASET GENERATION
@@ -140,9 +157,9 @@ for user in users:
 
     for _ in range(history_len):
         task_level = generate_task_level(user["user_level"])
-        priority = random.randint(0, 3)
+        priority = random.randint(1, 4)
 
-        is_on_time, free_time, used_time = generate_time_and_status(
+        is_on_time, free_time_rto, used_time_rto = generate_time_and_status(
             priority, task_level, user["user_level"]
         )
 
@@ -153,8 +170,8 @@ for user in users:
             "level": task_level,
             "priority": priority,
             "is_on_time": is_on_time,
-            "free_time_rto": free_time,
-            "used_time_rto": used_time
+            "free_time_rto": free_time_rto,
+            "used_time_rto": used_time_rto
         })
 
 df = pd.DataFrame(rows)
@@ -162,9 +179,10 @@ df = pd.DataFrame(rows)
 # =========================
 # EXPORT
 # =========================
+
 from app.util.constants.UserPrediction import CstFiles
 
 ds_csv = CstFiles.DATA_FILE
-df.to_csv(ds_csv,index=False)
+df.to_csv(ds_csv, index=False)
 
 print("Dataset generated:", df.shape)
