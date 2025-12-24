@@ -192,7 +192,7 @@ df = pd.DataFrame(rows)
 
 from app.util.constants.UserPrediction import CstFiles
 
-ds_csv = CstFiles.DATA_FILE
+ds_csv = 'D:\\Develop\\My_Own_Projects\\intern_project\\fastapi\\app/storage/data/user_pred_ds.csv'
 df.to_csv(ds_csv, index=False)
 
 print("Dataset generated:", df.shape)

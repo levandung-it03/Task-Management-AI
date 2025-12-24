@@ -28,11 +28,11 @@ class CstFiles:
     LABEL_ENC_FILE = _ROOT_STORAGE_FOLDER + _MODEL_FOLDER + '/user_pred_label_enc.pkl'
 
     DATA_BACKUP_FILE = _ROOT_STORAGE_FOLDER + _MODEL_DATA + '/user_pred_ds_backup.csv'
-    DATA_FILE = _ROOT_STORAGE_FOLDER + _MODEL_DATA + '/user_pred_ds.csv'
+    # DATA_FILE = _ROOT_STORAGE_FOLDER + _MODEL_DATA + '/user_pred_ds.csv' # Used by convertor
     CACHE_FILE = _ROOT_STORAGE_FOLDER + _MODEL_DATA + '/user_pred_cache.json'
     TRAIN_DATA_FILE = _ROOT_STORAGE_FOLDER + _MODEL_DATA + '/user_pred_train.csv'
     TEST_DATA_FILE = _ROOT_STORAGE_FOLDER + _MODEL_DATA + '/user_pred_test.csv'
-    # DATA_FILE = TRAIN_DATA_FILE
+    DATA_FILE = TRAIN_DATA_FILE
 
     LOG_FILE = _ROOT_STORAGE_FOLDER + _LOG + '/results.txt'
 

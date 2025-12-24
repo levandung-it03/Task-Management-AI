@@ -18905,7 +18905,6 @@ user_domain,user_id,domain,level,priority,is_on_time,free_time_rto,used_time_rto
 140__TEST,140,TEST,1,4,0,0.0,1.685
 140__TEST,140,TEST,1,1,1,0.582,0.21
 140__TEST,140,TEST,1,4,1,0.449,0.503
-
 141__HR,141,HR,4,1,1,0.15,0.428
 141__HR,141,HR,4,3,0,0.0,2.43
 141__HR,141,HR,4,3,1,0.054,0.94

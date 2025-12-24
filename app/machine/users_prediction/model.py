@@ -121,7 +121,7 @@ class RecModelSvc:
         df = df.copy().dropna()
         df.drop(labels=[
             CstUser.user_id,
-            CstTask.domain,
+            CstTask.domain
         ], axis=1, inplace=True)
         df[CstTask.level] *= CstWeights.LEVEL
         df[CstTask.priority] *= CstWeights.PRIORITY
@@ -136,11 +136,11 @@ class RecModelSvc:
         row[CstTask.priority] *= CstWeights.PRIORITY
         row[CstTask.is_on_time] *= CstWeights.IS_ON_TIME
         row[CstTask.free_time_rto] *= CstWeights.FREE_TIME
-        row[CstTask.is_on_time] *= CstWeights.IS_ON_TIME
+        row[CstTask.used_time_rto] *= CstWeights.USED_TIME
         return row
 
     @classmethod
-    def _load_encoder(cls):
+    def load_encoder(cls):
         label_encoder = None
         try:
             if label_encoder is None:
@@ -165,8 +165,9 @@ class RecModelSvc:
             random_state=42,        # Model separate dataset with a fixed-size (popular in community).
             n_estimators=n_estimators,# Num of trees.
             learning_rate=0.05,     # Contribution of each tree (usually used with n=800, it's 0.1 with n=500)
-            num_leaves=31,          # Default from LightGBM
-            max_depth=6,            # leaves <= 2^depth
+            num_leaves=120,          # Default from LightGBM
+            max_depth=7,            # leaves <= 2^depth (2^7 = 128)
+            min_data_in_leaf=20,    # From DecisionTree.
             metric="multi_logloss", # Support output loss_function score.
             verbosity=-1,           # Turn-off default log.
         )
@@ -176,14 +177,14 @@ class RecModelSvc:
         joblib.dump(model, CstFiles.MODEL_FILE)
 
     @classmethod
-    def _load_model(cls):
+    def load_model(cls):
         model = None
         if os.path.exists(CstFiles.MODEL_FILE):
             model = joblib.load(CstFiles.MODEL_FILE)
 
         if model is None:
             cls.renew_model()
-            model = cls._load_model()
+            model = cls.load_model()
 
         return model
 
@@ -212,7 +213,7 @@ class RecModelSvc:
         features = df.drop(columns=[CstTask.label_name])
         labels = df[CstTask.label_name]
 
-        label_encoder = cls._load_encoder()
+        label_encoder = cls.load_encoder()
         enc_labels = label_encoder.fit_transform(labels)
 
         loss_recorder = LossRecorder()
@@ -224,20 +225,12 @@ class RecModelSvc:
             eval_metric="multi_logloss",
             callbacks=[loss_recorder, lgb.log_evaluation(period=5)]
         )
-        # cls._calculate_score(loss_recorder)
+        cls._calculate_score(loss_recorder)
 
         cls._save_model(model)
         cls._save_label_enc(label_encoder)
         print("✅ Classifier trained and saved successfully.")
         return model
-
-    @classmethod
-    def upsert_cache_by_new_records(cls, new_records: list[TaskUserRecord]) -> None:
-        max_free_time = max([line.free_time_rto for line in new_records])
-        min_used_time = min([line.used_time_rto for line in new_records])
-
-        CacheSvc.upsert_max_value(CstCache.max_free_time, max_free_time)    # save max_free_time
-        CacheSvc.upsert_min_value(CstCache.min_used_time, min_used_time)    # save min_used_time
 
     @classmethod
     def update_model(cls, new_records: list[TaskUserRecord]) -> None:
@@ -247,9 +240,12 @@ class RecModelSvc:
         df = DatasetSvc.update_dataset(new_df)  # save dataset
         df = cls.pre_handle_dataset(df)
 
-        cls.upsert_cache_by_new_records(new_records)
+        max_free_time = max([line.free_time_rto for line in new_records])
+        min_used_time = min([line.used_time_rto for line in new_records])
+        CacheSvc.upsert_max_value(CstCache.max_free_time, max_free_time)   # save max_free_time
+        CacheSvc.upsert_min_value(CstCache.min_used_time, min_used_time)   # save min_used_time
 
-        label_encoder = cls._load_encoder()
+        label_encoder = cls.load_encoder()
         label_encoder.fit(df[CstTask.label_name])
         cls._save_label_enc(label_encoder)    # save encoder
 
@@ -258,7 +254,7 @@ class RecModelSvc:
 
         enc_labels = label_encoder.transform(labels)
 
-        old_model = cls._load_model()
+        old_model = cls.load_model()
         new_model = cls._init_model(20)
         new_model.fit(
             features,
@@ -293,7 +289,7 @@ class RecModelSvc:
 
     @classmethod
     def recommend(cls, request: RecommendingUsersRequest) -> pd.DataFrame:
-        model = cls._load_model()
+        model = cls.load_model()
         enc_request = CstTaskConvertor.encode_request(request)
 
         # -------------preparation-------------
@@ -303,7 +299,7 @@ class RecModelSvc:
             CstTask.priority: enc_request.priority,
             CstTask.is_on_time: cached_values[CstCache.is_on_time],
             CstTask.free_time_rto: cached_values[CstCache.max_free_time],
-            CstTask.used_time_rto: cached_values[CstCache.min_used_time],
+            CstTask.used_time_rto: cached_values[CstCache.min_used_time]
         }])
         # -------------prediction---------------
         predicted_res = model.booster_.predict(input_df, raw_score=True)
@@ -311,7 +307,7 @@ class RecModelSvc:
         labels_in_order = model.classes_
 
         # -------------build-results--------------
-        label_encoder = cls._load_encoder()
+        label_encoder = cls.load_encoder()
         enc_labels_in_order = label_encoder.inverse_transform(labels_in_order)
 
         user_predictions = []
@@ -332,64 +328,5 @@ class RecModelSvc:
         CacheSvc.init_cache()
         RecModelSvc.renew_model()
 
-    @classmethod
-    def _top_k_accuracy_test(cls, k_list=(1, 3, 5)) -> dict:
-        df_test = pd.read_csv(CstFiles.TEST_DATA_FILE)
-        df_test = cls.pre_handle_dataset(df_test)
 
-        X_test = df_test.drop(columns=[CstTask.label_name])
-        labels = df_test[CstTask.label_name]
-
-        label_encoder = cls._load_encoder()
-        enc_labels = label_encoder.transform(labels)
-
-        model = cls._load_model()
-        proba = model.predict_proba(X_test)
-
-        results = {}
-
-        # -------- Top-K Accuracy --------
-        for k in k_list:
-            correct = 0
-            for i in range(len(enc_labels)):
-                top_k_idx = proba[i].argsort()[-k:]
-                if enc_labels[i] in top_k_idx:
-                    correct += 1
-
-            results[f"top_{k}_accuracy"] = correct / len(enc_labels)
-
-        # -------- Optional: detailed ranking (debug) --------
-        results["num_samples"] = len(enc_labels)
-        results["num_classes"] = proba.shape[1]
-
-        return results
-
-    @classmethod
-    def run_test_loss(cls):
-        # RecModelSvc.start_server()
-
-        results = cls._top_k_accuracy_test(k_list = [1, 3, 5, 10, 20])
-        print("\n".join([
-            f"{k}: {v}"
-            for k, v in results.items()
-        ]))
-
-
-        # default_domain = CstTaskConvertor.str_domains[1]
-        # for lidx, level_str in enumerate(CstTaskConvertor.map_levels.keys()):
-        #     for pidx, priority_str in enumerate(CstTaskConvertor.map_priorities.keys()):
-        #         DebuggerSvc.start_terminal_log()
-        #         print(f"\n====================== BATCH{lidx}-{pidx} ======================")
-        #         request = RecommendingUsersRequest(
-        #             domain=default_domain,
-        #             level=level_str,
-        #             priority=priority_str
-        #         )
-        #         DebuggerSvc.log_request(request)
-        #         recommendations = RecModelSvc.recommend(request)
-        #         user_map = DebuggerSvc.get_user_map(DatasetSvc.get_dataset())
-        #         DebuggerSvc.log_prediction(recommendations, user_map, request, CacheSvc.get_cache())
-        #         DebuggerSvc.stop_terminal_log()
-
-# RecModelSvc.run_test_loss()
-# RecModelSvc.renew_model()
+# RecModelSvc.start_server()
