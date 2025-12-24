@@ -38,12 +38,12 @@ add_users(111, 140, "TEST", {
     "fresher": (136, 140)
 })
 
-add_users(141, 145, "BUSINESS_ANALYSIS", {
+add_users(141, 145, "HR", {
     "senior": (141, 143),
     "junior": (144, 145)
 })
 
-add_users(146, 150, "HR", {
+add_users(146, 150, "BUSINESS_ANALYSIS", {
     "senior": (146, 146),
     "junior": (147, 149),
     "fresher": (150, 150)
@@ -90,7 +90,7 @@ def generate_time_and_status(priority, task_level, user_level):
     # =========================
     # PRIORITY 1,2,3
     # =========================
-    if priority in [1, 2, 3]:
+    if priority in [1, 2]:
         ontime_prob = {
             "equal": 0.70,
             "easier": 0.95,
@@ -101,7 +101,17 @@ def generate_time_and_status(priority, task_level, user_level):
             "easier": (0.15, 0.50)
         }
         used_range_late = (0.8, 3.0)
-
+    elif priority in [3]:
+        ontime_prob = {
+            "equal": 0.60,
+            "easier": 0.95,
+            "harder": 0.20   # 70% trễ
+        }
+        used_range_ontime = {
+            "equal": (0.3, 1.0),
+            "easier": (0.2, 0.50)
+        }
+        used_range_late = (1.3, 3.0)
     # =========================
     # PRIORITY 4
     # =========================
@@ -153,7 +163,7 @@ def generate_time_and_status(priority, task_level, user_level):
 rows = []
 
 for user in users:
-    history_len = random.randint(50, 70)
+    history_len = random.randint(120, 150)
 
     for _ in range(history_len):
         task_level = generate_task_level(user["user_level"])

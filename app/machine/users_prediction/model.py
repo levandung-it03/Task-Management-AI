@@ -166,8 +166,7 @@ class RecModelSvc:
             n_estimators=n_estimators,# Num of trees.
             learning_rate=0.05,     # Contribution of each tree (usually used with n=800, it's 0.1 with n=500)
             num_leaves=31,          # Default from LightGBM
-            max_depth=5,            # leaves <= 2^depth
-            min_data_in_leaf=20,    # From DecisionTree.
+            max_depth=6,            # leaves <= 2^depth
             metric="multi_logloss", # Support output loss_function score.
             verbosity=-1,           # Turn-off default log.
         )
@@ -225,7 +224,7 @@ class RecModelSvc:
             eval_metric="multi_logloss",
             callbacks=[loss_recorder, lgb.log_evaluation(period=5)]
         )
-        cls._calculate_score(loss_recorder)
+        # cls._calculate_score(loss_recorder)
 
         cls._save_model(model)
         cls._save_label_enc(label_encoder)
@@ -342,7 +341,7 @@ class RecModelSvc:
         labels = df_test[CstTask.label_name]
 
         label_encoder = cls._load_encoder()
-        y_test = label_encoder.transform(labels)
+        enc_labels = label_encoder.transform(labels)
 
         model = cls._load_model()
         proba = model.predict_proba(X_test)
@@ -352,22 +351,22 @@ class RecModelSvc:
         # -------- Top-K Accuracy --------
         for k in k_list:
             correct = 0
-            for i in range(len(y_test)):
+            for i in range(len(enc_labels)):
                 top_k_idx = proba[i].argsort()[-k:]
-                if y_test[i] in top_k_idx:
+                if enc_labels[i] in top_k_idx:
                     correct += 1
 
-            results[f"top_{k}_accuracy"] = correct / len(y_test)
+            results[f"top_{k}_accuracy"] = correct / len(enc_labels)
 
         # -------- Optional: detailed ranking (debug) --------
-        results["num_samples"] = len(y_test)
+        results["num_samples"] = len(enc_labels)
         results["num_classes"] = proba.shape[1]
 
         return results
 
     @classmethod
     def run_test_loss(cls):
-        RecModelSvc.start_server()
+        # RecModelSvc.start_server()
 
         results = cls._top_k_accuracy_test(k_list = [1, 3, 5, 10, 20])
         print("\n".join([
@@ -392,5 +391,5 @@ class RecModelSvc:
         #         DebuggerSvc.log_prediction(recommendations, user_map, request, CacheSvc.get_cache())
         #         DebuggerSvc.stop_terminal_log()
 
-RecModelSvc.run_test_loss()
+# RecModelSvc.run_test_loss()
 # RecModelSvc.renew_model()

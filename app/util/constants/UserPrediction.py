@@ -18,8 +18,8 @@ class CstWeights:
 
 class CstFiles:
     # _ROOT_STORAGE_FOLDER = os.getcwd() + '/app/storage'
-    # _ROOT_STORAGE_FOLDER = 'D:\\Develop\\My_Own_Projects\\intern_project\\fastapi\\app/storage'
-    _ROOT_STORAGE_FOLDER = 'C:\\Users\\TSB\\Workspace\\DEV\\PERSONAL\\Task-Management-AI-main\\app\\storage'
+    _ROOT_STORAGE_FOLDER = 'D:\\Develop\\My_Own_Projects\\intern_project\\fastapi\\app/storage'
+    # _ROOT_STORAGE_FOLDER = 'C:\\Users\\TSB\\Workspace\\DEV\\PERSONAL\\Task-Management-AI-main\\app\\storage'
     _MODEL_FOLDER = '/model'
     _MODEL_DATA = '/data'
     _LOG = '/log'
@@ -92,7 +92,7 @@ class CstTaskConvertor:
     enc_levels = list(map_levels.values())
 
     str_domains = ["BUSINESS_ANALYSIS", "BACKEND", "FRONTEND", "DEPLOY", "DESIGN", "TEST", "DOCUMENTATION",
-                   "MAINTENANCE", "RESEARCH", "TRAINING", "AI"]
+                   "MAINTENANCE", "RESEARCH", "TRAINING", "AI", "HR"]
     map_domains = {domain: idx for idx, domain in enumerate(str_domains)}
     enc_domains = list(map_domains.values())
 
