@@ -9,7 +9,7 @@ from app.util.constants.DBConvertor import BE_PROJECTS, FE_PROJECTS, QA_PROJECTS
 from app.util.constants.UserPrediction import CstFiles
 from app.util.constants.UserPrediction import CstTaskConvertor
 
-DATA = CstFiles.DATA_FILE
+DATA = "D:\\Develop\\My_Own_Projects\\intern_project\\fastapi\\app\\storage\\data\\user_pred_ds.csv"
 SQL_ROOT_PATH = "D:\\Develop\\My_Own_Projects\\intern_project\\fastapi\\app\\storage\\_ignored\\users_prediction\\sql"
 """
     1. Có một Project > 1 Phase > 1 Collection
