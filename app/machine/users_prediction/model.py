@@ -10,12 +10,10 @@ $ pip install "numpy<2.0"
 """
 import os
 
-import numpy as np
 import pandas as pd
 import lightgbm as lgb
 import json
 import joblib
-from matplotlib import pyplot as plt
 
 from sklearn.preprocessing import LabelEncoder
 from pandas import Series
@@ -130,6 +128,9 @@ class RecModelSvc:
         df[CstTask.is_on_time] *= CstWeights.IS_ON_TIME
         df[CstTask.free_time_rto] *= CstWeights.FREE_TIME
         df[CstTask.used_time_rto] *= CstWeights.USED_TIME
+        # df[CstTask.domain] = df[CstTask.domain].map(
+        #     lambda d: CstTaskConvertor.map_domains.get(d, "UNKNOWN")
+        # )
         return df
 
     @classmethod

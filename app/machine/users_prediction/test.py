@@ -1,4 +1,9 @@
+import numpy as np
+import pandas as pd
+from matplotlib import pyplot as plt
+
 from app.machine.users_prediction.model import RecModelSvc
+from app.util.constants.UserPrediction import CstTask, CstFiles
 
 
 class RecModelTestSvc:
@@ -59,15 +64,15 @@ class RecModelTestSvc:
     @classmethod
     def _top_k_accuracy_test(cls, k_list) -> dict:
         df_test = pd.read_csv(CstFiles.TEST_DATA_FILE)
-        df_test = cls.pre_handle_dataset(df_test)
+        df_test = RecModelSvc.pre_handle_dataset(df_test)
 
         X_test = df_test.drop(columns=[CstTask.label_name])
         labels = df_test[CstTask.label_name]
 
-        label_encoder = cls.load_encoder()
+        label_encoder = RecModelSvc.load_encoder()
         y_test = label_encoder.transform(labels)
 
-        model = cls.load_model()
+        model = RecModelSvc.load_model()
         proba = model.predict_proba(X_test)
 
         results = {}
