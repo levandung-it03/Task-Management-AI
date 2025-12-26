@@ -81,7 +81,7 @@ class CstModel:
         CstTask.used_time_rto
     ]
     type_category = "category"
-    n_estimators = 800
+    n_estimators = 1200
 
 
 class CstTaskConvertor:
