@@ -223,7 +223,7 @@ class RecModelSvc:
         model = cls._init_model()
         model.fit(
             features,
-            enc_labels,
+            enc_labels,\
             eval_set=[(features, enc_labels)],
             eval_metric="multi_logloss",
             callbacks=[loss_recorder, lgb.log_evaluation(period=5)]
@@ -329,7 +329,8 @@ class RecModelSvc:
 
     @classmethod
     def start_server(cls):
-        CacheSvc.init_cache()
-        RecModelSvc.renew_model()
+        # CacheSvc.init_cache()
+        # RecModelSvc.renew_model()
+        return
 
 # RecModelSvc.start_server()

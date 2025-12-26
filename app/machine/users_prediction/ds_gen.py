@@ -38,7 +38,7 @@ add_users(111, 140, "TEST", {
     "fresher": (136, 140)
 })
 
-add_users(141, 145, "HR", {
+    add_users(141, 145, "HR", {
     "senior": (141, 143),
     "junior": (144, 145)
 })
