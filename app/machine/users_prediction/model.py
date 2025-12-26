@@ -121,16 +121,16 @@ class RecModelSvc:
         df = df.copy().dropna()
         df.drop(labels=[
             CstUser.user_id,
-            CstTask.domain
+            # CstTask.domain
         ], axis=1, inplace=True)
         df[CstTask.level] *= CstWeights.LEVEL
         df[CstTask.priority] *= CstWeights.PRIORITY
         df[CstTask.is_on_time] *= CstWeights.IS_ON_TIME
         df[CstTask.free_time_rto] *= CstWeights.FREE_TIME
         df[CstTask.used_time_rto] *= CstWeights.USED_TIME
-        # df[CstTask.domain] = df[CstTask.domain].map(
-        #     lambda d: CstTaskConvertor.map_domains.get(d, "UNKNOWN")
-        # )
+        df[CstTask.domain] = df[CstTask.domain].map(
+            lambda d: CstTaskConvertor.map_domains.get(d, "UNKNOWN")
+        )
         return df
 
     @classmethod
@@ -300,6 +300,7 @@ class RecModelSvc:
         input_df = pd.DataFrame([{
             CstTask.level: enc_request.level,
             CstTask.priority: enc_request.priority,
+            CstTask.domain: enc_request.domain,
             CstTask.is_on_time: cached_values[CstCache.is_on_time],
             CstTask.free_time_rto: cached_values[CstCache.max_free_time],
             CstTask.used_time_rto: cached_values[CstCache.min_used_time]

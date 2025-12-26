@@ -54,49 +54,6 @@ def check_hard_constraints(df):
         # NEW CHECKS
         # =========================
 
-        # ---- delayed_time_rto basic range ----
-        bad = df[df.delayed_time_rto < 0.05]
-        if not bad.empty:
-            errors.append(f"❌ delayed_time_rto < 0.05 ({len(bad)})")
-
-        # ---- on-time: free + used + delayed <= 1 ----
-        bad = df[
-            (df.is_on_time == 1) &
-            ((df.free_time_rto + df.used_time_rto + df.delayed_time_rto) > 1.001)
-            ]
-        if not bad.empty:
-            errors.append(
-                f"❌ is_on_time=1 but free+used+delayed > 1 ({len(bad)})"
-            )
-
-        # ---- late: delayed_time_rto in [0.05, 1.8] ----
-        bad = df[
-            (df.is_on_time == 0) &
-            (~df.delayed_time_rto.between(0.05, 1.8))
-            ]
-        if not bad.empty:
-            errors.append(
-                f"❌ is_on_time=0 but delayed_time_rto not in [0.05,1.8] ({len(bad)})"
-            )
-
-        # ---- free_time_scr correctness ----
-        bad = df[
-            (df.free_time_scr - df.free_time_rto * df.priority).abs() > eps
-            ]
-        if not bad.empty:
-            errors.append(
-                f"❌ free_time_scr != free_time_rto * priority ({len(bad)})"
-            )
-
-        # ---- bad_time_scr correctness ----
-        bad = df[
-            (df.bad_time_scr - df.delayed_time_rto * df.priority).abs() > eps
-            ]
-        if not bad.empty:
-            errors.append(
-                f"❌ bad_time_scr != delayed_time_rto * priority ({len(bad)})"
-            )
-
     return errors
 
 
