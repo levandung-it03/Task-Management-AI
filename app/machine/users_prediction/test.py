@@ -113,7 +113,7 @@ class RecModelTestSvc:
         return results
 
 k_list = [1, 3, 5, 10, 30, 45]
-RecModelSvc.start_server()
+# RecModelSvc.start_server()
 result = RecModelTestSvc.run_test_loss(k_list)
 RecModelTestSvc.plot_top_k_accuracy(result, k_list)
 RecModelTestSvc.plot_true_rank_histogram(

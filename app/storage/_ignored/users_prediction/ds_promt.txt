@@ -34,7 +34,7 @@ user_domain	user_id	domain	level	priority	is_on_time	free_time_rto	used_time_rto
 + used_time_rto = số thực [0.2;3] (lượng thời gian sử dụng là bao nhiêu, thật ra nó tới vô cùng, nhưng tôi cho 3 cho chắc).
 
 4. Quy tắc:
-+ Mỗi nhân viên sẽ có lịch sử từ 50-70 dòng.
++ Mỗi nhân viên sẽ có lịch sử từ 120-150 dòng.
 + is_on_time=0 thì:
 ++ Mặc định free_time_rto=0.
 ++ Và used_time_rto không phụ thuộc vào tham số nào cả (từ 0 đến 3).
