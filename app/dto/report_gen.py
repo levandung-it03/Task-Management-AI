@@ -30,31 +30,32 @@ class ReportRequest(BaseModel):
     def to_completed_report_prompt(self):
         logger.info("to_completed_report_prompt")
         return f"""
-Start with Dear Mr. of Ms. {self.creator_name}, end with {self.employee_name}\n
 Generate COMPLETED_EMAIL based on the following subtask context:\n\n
 Project: {self.project} ({self.project_desc})\n
 Phase: {self.phase} ({self.phase_desc})\n
 Collection: {self.collection} ({self.collection_desc})\n
 Task: {self.task_name} ({self.task_desc})\n
-f"Subtask: {self.subtask_name} ({self.subtask_desc})"
+Subtask: {self.subtask_name} ({self.subtask_desc})
+\nStart with Dear Mr. or Ms. {self.creator_name}, end with {self.employee_name}
 """
         
     def to_processing_report_prompt(self):
         logger.info("to_processing_report_prompt")
         return f"""
-Start with Dear Mr of Ms {self.creator_name}, end with {self.employee_name}\n
 Generate IN_PROGRESS_EMAIL based on the following subtask context:\n\n
 Project: {self.project} ({self.project_desc})\n
 Phase: {self.phase} ({self.phase_desc})\n
 Collection: {self.collection} ({self.collection_desc})\n
 Task: {self.task_name} ({self.task_desc})\n
-f"Subtask: {self.subtask_name} ({self.subtask_desc})"
+Subtask: {self.subtask_name} ({self.subtask_desc})
+\nStart with Dear Mr or Ms {self.creator_name}, end with {self.employee_name}
 """
 
     def to_daily_report_prompt(self):
         logger.info("to_daily_report_prompt")
+        logger.info(self.subtasks)
         subtasks_info = "\n".join([
-                    f"- {s.get('name', 'N/A')} - Status: {s.get('status', 'N/A')}" for s in self.subtasks
+                    f"- {s.name} - Status: {s.status}" for s in self.subtasks
                 ])
         return f"""
 Generate DAILY_PROGRESS_NOTE based on the following project context:\n\n
